@@ -26,8 +26,8 @@ function RegisterPage() {
       const data = await registerUser(email, password);
       login(data.token);
       navigate("/quiz");
-    } catch (err) {
-      setError("Registration failed. That email might already be in use.");
+    } catch (err: any) {
+      setError(err.response?.data?.error ?? "Registration failed. That email might already be in use.");
       console.error(err);
     } finally {
       setLoading(false);
