@@ -106,10 +106,10 @@ const triggerHaptic = () => {
       <div className="w-full max-w-md px-4">
 
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-black tracking-tight" style={{ color: "#1A1A2E" }}>
-            Quiz<span style={{ color: "#FF6B35" }}>Streak</span>
-          </h1>
+        <div className="flex justify-between items-center mb-6 sm:mb-8">
+  <h1 className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: "#1A1A2E" }}>
+    Quiz<span style={{ color: "#FF6B35" }}>Streak</span>
+  </h1>
           <button
             onClick={handleLogout}
             className="text-xs text-gray-400 hover:text-gray-600 transition-colors font-medium"
@@ -133,12 +133,10 @@ const triggerHaptic = () => {
         </div>
 
         {/* Main card */}
-        <div className={`bg-white rounded-2xl shadow-lg overflow-hidden ${shake ? "shake" : ""}`}>
-
-          {/* Orange top bar */}
-          <div className="h-2 w-full" style={{ backgroundColor: "#FF6B35" }} />
-
-          <div className="p-8">
+        {/* Main card — update padding */}
+<div className={`bg-white rounded-2xl shadow-lg overflow-hidden ${shake ? "shake" : ""}`}>
+  <div className="h-2 w-full" style={{ backgroundColor: "#FF6B35" }} />
+  <div className="p-6 sm:p-8">  {/* smaller padding on mobile */}
             {error && (
               <div className="mb-4 p-3 rounded-lg text-sm font-medium" style={{ backgroundColor: "#FEE2E2", color: "#EF233C" }}>
                 {error}
@@ -183,9 +181,9 @@ const triggerHaptic = () => {
                   <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-1">
                     Current Streak
                   </p>
-                  <p className="text-5xl font-black" style={{ color: "#FFE66D" }}>
-                    🔥 {displayResult.streak}
-                  </p>
+                  <p className="text-4xl sm:text-5xl font-black" style={{ color: "#FFE66D" }}>
+  🔥 {displayResult.streak}
+</p>
                   <p className="text-xs text-gray-500 mt-2">
                     {displayResult.streak === 0
                       ? "Answer correctly tomorrow to start a streak!"
@@ -202,22 +200,22 @@ const triggerHaptic = () => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <input
-                  type="text"
-                  placeholder="Type your answer..."
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:outline-none focus:border-orange-400 transition-colors text-sm"
-                  required
-                  autoFocus
-                />
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full py-3 rounded-xl font-bold text-white transition-opacity disabled:opacity-50"
-                  style={{ backgroundColor: "#FF6B35" }}
-                >
-                  {submitting ? "Checking..." : "Submit Answer →"}
-                </button>
+  type="text"
+  placeholder="Type your answer..."
+  value={answer}
+  onChange={(e) => setAnswer(e.target.value)}
+  className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:outline-none focus:border-orange-400 transition-colors text-base"
+  required
+  autoFocus
+/>
+<button
+  type="submit"
+  disabled={submitting}
+  className="w-full py-4 rounded-xl font-bold text-white transition-opacity disabled:opacity-50 text-base"
+  style={{ backgroundColor: "#FF6B35" }}
+>
+  {submitting ? "Checking..." : "Submit Answer →"}
+</button>
               </form>
             )}
           </div>

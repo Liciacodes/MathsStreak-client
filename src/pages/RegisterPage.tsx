@@ -35,23 +35,35 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#F7F7FF" }}>
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ backgroundColor: "#F7F7FF" }}
+    >
       <div className="w-full max-w-md px-4">
-
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-black tracking-tight" style={{ color: "#1A1A2E" }}>
+          <h1
+            className="text-5xl font-black tracking-tight"
+            style={{ color: "#1A1A2E" }}
+          >
             Quiz<span style={{ color: "#FF6B35" }}>Streak</span>
           </h1>
-          <p className="mt-2 text-gray-500 text-sm">One question a day. Build your streak.</p>
+          <p className="mt-2 text-gray-500 text-sm">
+            One question a day. Build your streak.
+          </p>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-xl font-bold mb-6" style={{ color: "#1A1A2E" }}>Create your account</h2>
+          <h2 className="text-xl font-bold mb-6" style={{ color: "#1A1A2E" }}>
+            Create your account
+          </h2>
 
           {error && (
-            <div className="mb-4 p-3 rounded-lg text-sm font-medium" style={{ backgroundColor: "#FEE2E2", color: "#EF233C" }}>
+            <div
+              className="mb-4 p-3 rounded-lg text-sm font-medium"
+              style={{ backgroundColor: "#FEE2E2", color: "#EF233C" }}
+            >
               {error}
             </div>
           )}
@@ -63,7 +75,7 @@ function RegisterPage() {
               placeholder="Email address"
               value={email}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:outline-none focus:border-orange-400 transition-colors text-sm"
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:outline-none focus:border-orange-400 transition-colors text-base"
               required
             />
             <input
@@ -72,13 +84,13 @@ function RegisterPage() {
               placeholder="Password"
               value={password}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:outline-none focus:border-orange-400 transition-colors text-sm"
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:outline-none focus:border-orange-400 transition-colors text-base"
               required
             />
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl font-bold text-white transition-opacity disabled:opacity-50"
+              className="w-full py-4 rounded-xl font-bold text-white transition-opacity disabled:opacity-50 text-base"
               style={{ backgroundColor: "#FF6B35" }}
             >
               {loading ? "Creating account..." : "Create account →"}
@@ -87,7 +99,11 @@ function RegisterPage() {
 
           <p className="text-center text-sm text-gray-400 mt-6">
             Already have an account?{" "}
-            <Link to="/login" className="font-semibold" style={{ color: "#FF6B35" }}>
+            <Link
+              to="/login"
+              className="font-semibold"
+              style={{ color: "#FF6B35" }}
+            >
               Log in
             </Link>
           </p>
