@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTodayQuiz, submitAnswer, type TodayQuizResponse } from "../api";
 import { useAuth } from "../AuthContext";
+import confetti from "canvas-confetti";
 
 function QuizPage() {
   const { token, logout } = useAuth();
@@ -12,12 +13,28 @@ function QuizPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [shake, setShake] = useState(false);
 
   const [result, setResult] = useState<{
     isCorrect: boolean;
     correctAnswer: string;
     streak: number;
   } | null>(null);
+
+  const triggerConfetti = () => {
+  confetti({
+    particleCount: 150,
+    spread: 80,
+    origin: { y: 0.6 },
+    colors: ["#FF6B35", "#FFE66D", "#06D6A0", "#1A1A2E"],
+  });
+};
+
+const triggerHaptic = () => {
+  if (navigator.vibrate) {
+    navigator.vibrate([100, 50, 100]);
+  }
+};
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -36,20 +53,30 @@ function QuizPage() {
   }, [token]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!token) return;
-    setError("");
-    setSubmitting(true);
-    try {
-      const data = await submitAnswer(token, answer);
-      setResult(data);
-    } catch (err) {
-      setError("Failed to submit. Please try again.");
-      console.error(err);
-    } finally {
-      setSubmitting(false);
+  event.preventDefault();
+  if (!token) return;
+
+  setError("");
+  setSubmitting(true);
+
+  try {
+    const data = await submitAnswer(token, answer);
+    setResult(data);
+
+    if (data.isCorrect) {
+      triggerConfetti();
+    } else {
+      triggerHaptic();
+      setShake(true);
+      setTimeout(() => setShake(false), 600);
     }
-  };
+  } catch (err) {
+    setError("Failed to submit. Please try again.");
+    console.error(err);
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const handleLogout = () => {
     logout();
@@ -106,7 +133,7 @@ function QuizPage() {
         </div>
 
         {/* Main card */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className={`bg-white rounded-2xl shadow-lg overflow-hidden ${shake ? "shake" : ""}`}>
 
           {/* Orange top bar */}
           <div className="h-2 w-full" style={{ backgroundColor: "#FF6B35" }} />
