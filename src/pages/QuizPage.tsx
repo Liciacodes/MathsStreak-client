@@ -9,7 +9,7 @@ function QuizPage() {
   const navigate = useNavigate();
 
   const [quizData, setQuizData] = useState<TodayQuizResponse | null>(null);
-  const [answer, setAnswer] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
