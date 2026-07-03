@@ -19,6 +19,7 @@ export interface TodayQuizResponse {
     alreadyAnswered: boolean;
     question: string;
     questionId?: string;
+    options?: string[];
     correctAnswer?: string;
     isCorrect?: boolean;
     streak?: number;

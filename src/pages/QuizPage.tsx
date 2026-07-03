@@ -52,15 +52,14 @@ const triggerHaptic = () => {
     fetchQuiz();
   }, [token]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  if (!token) return;
+  const handleOptionSelect = async (selectedOption: string) => {
+  if (!token || submitting) return;
 
   setError("");
   setSubmitting(true);
 
   try {
-    const data = await submitAnswer(token, answer);
+    const data = await submitAnswer(token, selectedOption);
     setResult(data);
 
     if (data.isCorrect) {
@@ -70,8 +69,8 @@ const triggerHaptic = () => {
       setShake(true);
       setTimeout(() => setShake(false), 600);
     }
-  } catch (err) {
-    setError("Failed to submit. Please try again.");
+  } catch (err: any) {
+    setError(err.response?.data?.error ?? "Failed to submit. Please try again.");
     console.error(err);
   } finally {
     setSubmitting(false);
@@ -198,25 +197,19 @@ const triggerHaptic = () => {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <input
-  type="text"
-  placeholder="Type your answer..."
-  value={answer}
-  onChange={(e) => setAnswer(e.target.value)}
-  className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 focus:outline-none focus:border-orange-400 transition-colors text-base"
-  required
-  autoFocus
-/>
-<button
-  type="submit"
-  disabled={submitting}
-  className="w-full py-4 rounded-xl font-bold text-white transition-opacity disabled:opacity-50 text-base"
-  style={{ backgroundColor: "#FF6B35" }}
->
-  {submitting ? "Checking..." : "Submit Answer →"}
-</button>
-              </form>
+              <div className="space-y-3">
+  {quizData?.options?.map((option, index) => (
+    <button
+      key={index}
+      onClick={() => handleOptionSelect(option)}
+      disabled={submitting}
+      className="w-full px-4 py-4 rounded-xl border-2 border-gray-100 text-left font-medium text-base transition-all hover:border-orange-400 hover:bg-orange-50 disabled:opacity-50"
+      style={{ color: "#1A1A2E" }}
+    >
+      {option}
+    </button>
+  ))}
+</div>
             )}
           </div>
         </div>
