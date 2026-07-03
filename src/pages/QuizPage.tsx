@@ -13,6 +13,7 @@ function QuizPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [result, setResult] = useState<{
     isCorrect: boolean;
@@ -82,6 +83,32 @@ function QuizPage() {
     logout();
     navigate("/login");
   };
+  const showResult = result || quizData?.alreadyAnswered;
+  const displayResult = result || {
+    isCorrect: quizData?.isCorrect ?? false,
+    correctAnswer: quizData?.correctAnswer ?? "",
+    streak: quizData?.streak ?? 0,
+  };
+
+  const handleShare = async () => {
+    const text = displayResult.isCorrect
+      ? `I'm on a ${displayResult.streak}-day streak on QuizStreak! 🔥 Can you beat me? Try today's maths question:\nhttps://quiz-streak-client.vercel.app`
+      : `QuizStreak got me today. Can you answer today's math question? \nhttps://quiz-streak-client.vercel.app`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   if (loading) {
     return (
@@ -96,13 +123,6 @@ function QuizPage() {
       </div>
     );
   }
-
-  const showResult = result || quizData?.alreadyAnswered;
-  const displayResult = result || {
-    isCorrect: quizData?.isCorrect ?? false,
-    correctAnswer: quizData?.correctAnswer ?? "",
-    streak: quizData?.streak ?? 0,
-  };
 
   return (
     <div
@@ -217,6 +237,17 @@ function QuizPage() {
                         : `${displayResult.streak} days in a row. Keep it up!`}
                   </p>
                 </div>
+
+                <button
+                  onClick={handleShare}
+                  className="w-full py-3 rounded-xl font-bold transition-all mt-4"
+                  style={{
+                    backgroundColor: copied ? "#06D6A0" : "#FFE66D",
+                    color: "#1A1A2E",
+                  }}
+                >
+                  {copied ? "Copied! ✓" : "Share your result 🔗"}
+                </button>
 
                 <p className="text-center text-xs text-gray-300 mt-4">
                   New question tomorrow ✦
