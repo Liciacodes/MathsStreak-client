@@ -91,9 +91,9 @@ function QuizPage() {
   };
 
   const handleShare = async () => {
-    const text = displayResult.isCorrect
-      ? `I'm on a ${displayResult.streak}-day streak on QuizStreak! 🔥 Can you beat me? Try today's maths question:\nhttps://quiz-streak-client.vercel.app`
-      : `QuizStreak got me today. Can you answer today's math question? \nhttps://quiz-streak-client.vercel.app`;
+  const text = displayResult.isCorrect
+  ? `I'm on a ${displayResult.streak} day streak on QuizStreak! 🔥 Think you can keep up? Try today's question:\nhttps://quiz-streak-client.vercel.app`
+  : `QuizStreak got me today 😅 Think you can answer today's math question? Try it:\nhttps://quiz-streak-client.vercel.app`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -246,7 +246,7 @@ function QuizPage() {
                     color: "#1A1A2E",
                   }}
                 >
-                  {copied ? "Copied! ✓" : "Share your result 🔗"}
+                  {copied ? "Copied! ✓" : "Try it yourself 👀"}
                 </button>
 
                 <p className="text-center text-xs text-gray-300 mt-4">
