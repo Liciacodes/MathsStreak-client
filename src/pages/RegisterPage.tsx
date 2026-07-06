@@ -46,7 +46,7 @@ function RegisterPage() {
             className="text-5xl font-black tracking-tight"
             style={{ color: "#1A1A2E" }}
           >
-            Quiz<span style={{ color: "#FF6B35" }}>Streak</span>
+            Maths<span style={{ color: "#FF6B35" }}>Streak</span>
           </h1>
           <p className="mt-2 text-gray-500 text-sm">
             One question a day. Build your streak.

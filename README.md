@@ -1,4 +1,4 @@
-# QuizStreak — Frontend
+# MathsStreak — Frontend
 
 The frontend for QuizStreak, a daily math quiz app. One AI-generated question a day, answer it, build your streak.
 

@@ -10,7 +10,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const TOKEN_KEY = 'quizstreak_token';
+const TOKEN_KEY = 'mathsstreak_token';
 
 export const AuthProvider = ({ children}: {children: ReactNode}) => {
     const [token, setToken] = useState<string | null>(() => {

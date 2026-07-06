@@ -136,7 +136,7 @@ function QuizPage() {
             className="text-2xl sm:text-3xl font-black tracking-tight"
             style={{ color: "#1A1A2E" }}
           >
-            Quiz<span style={{ color: "#FF6B35" }}>Streak</span>
+            Maths<span style={{ color: "#FF6B35" }}>Streak</span>
           </h1>
           <button
             onClick={handleLogout}
