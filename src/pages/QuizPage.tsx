@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getTodayQuiz, submitAnswer, type TodayQuizResponse } from "../api";
 import { useAuth } from "../AuthContext";
 import confetti from "canvas-confetti";
@@ -91,9 +91,9 @@ function QuizPage() {
   };
 
   const handleShare = async () => {
-  const text = displayResult.isCorrect
-  ? `I'm on a ${displayResult.streak} day streak on QuizStreak! 🔥 Think you can keep up? Try today's question:\nhttps://quiz-streak-client.vercel.app`
-  : `QuizStreak got me today 😅 Think you can answer today's math question? Try it:\nhttps://quiz-streak-client.vercel.app`;
+const text = displayResult.isCorrect
+  ? `I'm on a ${displayResult.streak} day streak on MathsStreak! 🔥 Think you can keep up? Try today's question:\nhttps://maths-streak-client.vercel.app`
+  : `MathsStreak got me today 😅 Think you can answer today's maths question? Try it:\nhttps://maths-streak-client.vercel.app`;;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -238,6 +238,14 @@ function QuizPage() {
                   </p>
                 </div>
 
+                <div className="mt-6 text-center">
+                  <Link
+                    to="/streak"
+                    className="text-sm font-medium text-indigo-600 hover:text-indigo-800 underline transition"
+                  >
+                    View my quiz history history →
+                  </Link>
+                </div>
                 <button
                   onClick={handleShare}
                   className="w-full py-3 rounded-xl font-bold transition-all mt-4"

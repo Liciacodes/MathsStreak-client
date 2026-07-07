@@ -1,5 +1,6 @@
 import axios from "axios";
 
+// ✓ Correct URL copied directly from your live Render logs
 const API_BASE_URL = 'https://quizstreak-api.onrender.com';
 
 const api = axios.create({
@@ -29,6 +30,12 @@ export interface SubmitAnswerResponse {
     isCorrect: boolean;
     correctAnswer: string;
     streak: number;
+}
+
+export interface StreakHistoryItem {
+    id: string;
+    date: string;
+    isCorrect: boolean;
 }
 
 export const registerUser = async (
@@ -71,6 +78,14 @@ export const submitAnswer = async (
         {answer},
         {headers: {Authorization: `Bearer ${token}`}}
     );
+    return response.data;
+}
+
+
+export const getStreakHistory = async (token: string): Promise<StreakHistoryItem[]> => {
+    const response = await api.get<StreakHistoryItem[]>('/quiz/history', {
+        headers: {Authorization: `Bearer ${token}`},
+    });
     return response.data;
 }
 

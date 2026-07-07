@@ -4,6 +4,7 @@ import RegisterPage from "./pages/RegisterPage";
 import QuizPage from "./pages/QuizPage";
 import { AuthProvider, useAuth } from "./AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
+import { StreakHistory } from "./pages/streak";
 
 function AppRoutes() {
 const {isLoggedIn} = useAuth()
@@ -15,9 +16,15 @@ const {isLoggedIn} = useAuth()
     element={<Navigate to={isLoggedIn ? '/quiz' : '/login'} replace />}/>
     <Route path="/login" element={<LoginPage/>}/>
     <Route path="/register" element={<RegisterPage/>}/>
+    <Route path="/streak" element={
+      <ProtectedRoute>
+        <StreakHistory/>
+      </ProtectedRoute>
+    }/>
     <Route path="/quiz" element={
       <ProtectedRoute>
         <QuizPage/>
+     
       </ProtectedRoute>
     }/>
    </Routes>
