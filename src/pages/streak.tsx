@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import { getStreakHistory, type StreakHistoryItem } from "../api";
+import { getStreakHistory} from "../api";
 
 export const StreakHistory = () => {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
-  const [history, setHistory] = useState<StreakHistoryItem[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -52,9 +52,15 @@ export const StreakHistory = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#F7F7FF" }}>
-        <div className="text-center">
-          <div className="text-4xl mb-4">📅</div>
-          <p className="text-gray-400 text-sm">Loading your history...</p>
+        <div className="flex flex-col items-center">
+          {/* Animated Spinner Circle */}
+          <div 
+            className="w-10 h-10 border-4 border-t-transparent animate-spin rounded-full mb-4" 
+            style={{ borderColor: "#FF6B35", borderTopColor: "transparent" }}
+          />
+          <p className="text-gray-400 text-sm font-medium tracking-wide">
+            Loading your history...
+          </p>
         </div>
       </div>
     );

@@ -33,9 +33,7 @@ export interface SubmitAnswerResponse {
 }
 
 export interface StreakHistoryItem {
-    id: string;
-    date: string;
-    isCorrect: boolean;
+   history: StreakHistoryItem[];
 }
 
 export const registerUser = async (
@@ -83,9 +81,9 @@ export const submitAnswer = async (
 
 
 export const getStreakHistory = async (token: string): Promise<StreakHistoryItem[]> => {
-    const response = await api.get<StreakHistoryItem[]>('/quiz/history', {
+    const response = await api.get<{ history: StreakHistoryItem[] }>('/quiz/history', {
         headers: {Authorization: `Bearer ${token}`},
     });
-    return response.data;
+    return response.data.history;
 }
 
