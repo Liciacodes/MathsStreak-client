@@ -1,12 +1,57 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getTodayQuiz, submitAnswer, type TodayQuizResponse } from "../api";
-import { useAuth } from "../AuthContext";
+import {
+  getTodayQuiz,
+  submitAnswer,
+  getLeaderboard,
+  type TodayQuizResponse,
+} from "../api";
+
 import confetti from "canvas-confetti";
 
+
+import { useAuth } from "../AuthContext";
+
+
+// 1. Dynamic Initials Helper (Matches Leaderboard)
+const getInitials = (email: string): string => {
+  if (!email) return "??";
+  const localPart = email.split("@")[0];
+
+  const parts = localPart.split(/[\._-]/);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  if (localPart.toLowerCase().startsWith("feliciausosen")) {
+    return "FU";
+  }
+
+  return localPart.substring(0, 2).toUpperCase();
+};
+
+// 2. Dynamic Display Name Helper (Matches Leaderboard)
+const getDisplayName = (email: string): string => {
+  if (!email) return "User";
+  const localPart = email.split("@")[0];
+
+  if (localPart.toLowerCase().startsWith("feliciausosen")) {
+    return "Felicia U.";
+  }
+
+  const parts = localPart.split(/[\._-]/);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return `${parts[0].charAt(0).toUpperCase() + parts[0].slice(1)} ${parts[1].charAt(0).toUpperCase()}.`;
+  }
+
+  return localPart.charAt(0).toUpperCase() + localPart.slice(1, 8);
+};
+
 function QuizPage() {
-  const { token, logout } = useAuth();
+  const { token, logout, email } = useAuth();
   const navigate = useNavigate();
+
+  const [userRank, setUserRank] = useState<number | null>(null);
 
   const [quizData, setQuizData] = useState<TodayQuizResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -14,6 +59,8 @@ function QuizPage() {
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [freezesAvailable, setFreezesAvailable] = useState<number>(0);
+  const [freezeUsed, setFreezeUsed] = useState<boolean>(false);
 
   const [result, setResult] = useState<{
     isCorrect: boolean;
@@ -37,11 +84,19 @@ function QuizPage() {
   };
 
   useEffect(() => {
-    const fetchQuiz = async () => {
+    const fetchData = async () => {
       if (!token) return;
       try {
-        const data = await getTodayQuiz(token);
-        setQuizData(data);
+        const [quiz, leaderboard] = await Promise.all([
+          getTodayQuiz(token),
+          getLeaderboard(token),
+        ]);
+        setQuizData(quiz);
+        setFreezesAvailable(quiz.freezeAvailable ?? 1);
+
+        // Find current user's rank from leaderboard
+        const userEntry = leaderboard.find((entry) => entry.email === email);
+        setUserRank(userEntry?.rank ?? null);
       } catch (err) {
         setError("Failed to load today's question.");
         console.error(err);
@@ -49,7 +104,7 @@ function QuizPage() {
         setLoading(false);
       }
     };
-    fetchQuiz();
+    fetchData();
   }, [token]);
 
   const handleOptionSelect = async (selectedOption: string) => {
@@ -61,6 +116,7 @@ function QuizPage() {
     try {
       const data = await submitAnswer(token, selectedOption);
       setResult(data);
+      setFreezeUsed(data.freezeUsed);
 
       if (data.isCorrect) {
         triggerConfetti();
@@ -83,6 +139,7 @@ function QuizPage() {
     logout();
     navigate("/login");
   };
+
   const showResult = result || quizData?.alreadyAnswered;
   const displayResult = result || {
     isCorrect: quizData?.isCorrect ?? false,
@@ -91,9 +148,9 @@ function QuizPage() {
   };
 
   const handleShare = async () => {
-const text = displayResult.isCorrect
-  ? `I'm on a ${displayResult.streak} day streak on MathsStreak! 🔥 Think you can keep up? Try today's question:\nhttps://maths-streak-client.vercel.app`
-  : `MathsStreak got me today 😅 Think you can answer today's maths question? Try it:\nhttps://maths-streak-client.vercel.app`;;
+    const text = displayResult.isCorrect
+      ? `I'm on a ${displayResult.streak} day streak on MathsStreak! 🔥 Think you can keep up? Try today's question:\nhttps://maths-streak-client.vercel.app`
+      : `MathsStreak got me today 😅 Think you can answer today's maths question? Try it:\nhttps://maths-streak-client.vercel.app`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -126,157 +183,225 @@ const text = displayResult.isCorrect
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center"
+      className="min-h-screen w-full flex justify-center items-start lg:items-center py-6 md:py-12"
       style={{ backgroundColor: "#F7F7FF" }}
     >
-      <div className="w-full max-w-md px-4">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6 sm:mb-8">
-          <h1
-            className="text-2xl sm:text-3xl font-black tracking-tight"
-            style={{ color: "#1A1A2E" }}
+      {/* Container max-w-md holds layout aligned cleanly with the main card width size */}
+      <div className="w-full max-w-md px-4 flex flex-col relative min-h-[85vh] lg:min-h-175">
+        {/* ROW 1: Responsive Header Block */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          {/* Logo */}
+          <div>
+            <h1
+              className="text-2xl sm:text-3xl font-black tracking-tight"
+              style={{ color: "#1A1A2E" }}
+            >
+              Maths<span style={{ color: "#FF6B35" }}>Streak</span>
+            </h1>
+            {/* Date badge */}
+            <div className="mt-2">
+              <span
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                style={{ backgroundColor: "#FFE66D", color: "#1A1A2E" }}
+              >
+                {new Date().toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
+            </div>
+          </div>
+
+          {/* Profile Widget Box */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center gap-3 w-full sm:w-auto max-w-xs">
+            <div className="relative">
+              {/* Dynamic Initials Avatar */}
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-black select-none shadow-sm"
+                style={{ backgroundColor: "#1A1A2E", color: "#FFFFFF" }}
+              >
+                {getInitials(email ?? "")}
+              </div>
+              {/* Badge Overlapping Avatar */}
+              <div
+                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-black shadow-sm"
+                style={{ backgroundColor: "#FF6B35", color: "#FFFFFF" }}
+              >
+                {userRank === 1 ? "👑" : (userRank ?? "?")}
+              </div>
+            </div>
+
+            {/* Dynamic Profile Info */}
+            <div className="flex flex-col">
+              {/* FIXED: Now correctly rendering getDisplayName logic instead of raw initials */}
+              <span
+                className="text-sm font-bold truncate max-w-35"
+                style={{ color: "#1A1A2E" }}
+              >
+                {getDisplayName(email ?? "")}
+              </span>
+              <button
+                onClick={() => navigate("/leaderboard")}
+                className="text-[10px] font-extrabold mt-0.5 tracking-wider uppercase text-left transition hover:opacity-80"
+                style={{ color: "#FF6B35" }}
+              >
+                view LEADERBOARD
+              </button>
+              <span
+                className="text-[10px] font-bold mt-0.5"
+                style={{ color: "#06D6A0" }}
+              >
+                🧊 {freezesAvailable} freeze{freezesAvailable !== 1 ? "s" : ""}{" "}
+                left
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ROW 2: Main Quiz Content Card */}
+        <div className="flex-1 flex items-center justify-center w-full my-4">
+          <div className="w-full">
+            <div
+              className={`bg-white rounded-2xl shadow-lg overflow-hidden w-full ${shake ? "shake" : ""}`}
+            >
+              <div
+                className="h-2 w-full"
+                style={{ backgroundColor: "#FF6B35" }}
+              />
+              <div className="p-6 sm:p-8">
+                {error && (
+                  <div
+                    className="mb-4 p-3 rounded-lg text-sm font-medium"
+                    style={{ backgroundColor: "#FEE2E2", color: "#EF233C" }}
+                  >
+                    {error}
+                  </div>
+                )}
+
+                <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3">
+                  Today's Question
+                </p>
+                <p
+                  className="text-lg font-semibold leading-relaxed mb-8"
+                  style={{ color: "#1A1A2E" }}
+                >
+                  {quizData?.question}
+                </p>
+
+                {showResult ? (
+                  <div>
+                    {/* Result banner */}
+                    <div
+                      className="rounded-xl p-4 mb-6 text-center"
+                      style={{
+                        backgroundColor: displayResult.isCorrect
+                          ? "#D1FAE5"
+                          : "#FEE2E2",
+                      }}
+                    >
+                      <p
+                        className="text-2xl font-black mb-1"
+                        style={{
+                          color: displayResult.isCorrect
+                            ? "#06D6A0"
+                            : "#EF233C",
+                        }}
+                      >
+                        {displayResult.isCorrect
+                          ? "Correct! 🎉"
+                          : "Not quite 😅"}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Answer:{" "}
+                        <span className="font-bold text-gray-700">
+                          {displayResult.correctAnswer}
+                        </span>
+                      </p>
+                    </div>
+
+                    {/* Integrated Streak History Widget */}
+                    <div
+                      className="rounded-xl p-4 text-center mb-6"
+                      style={{ backgroundColor: "#1A1A2E" }}
+                    >
+                      <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-1">
+                        Streak History
+                      </p>
+                      <p
+                        className="text-3xl font-black"
+                        style={{ color: "#FFE66D" }}
+                      >
+                        🔥 {displayResult.streak} Days
+                      </p>
+                      <div className="mt-2">
+                        <Link
+                          to="/streak"
+                          className="text-[11px] font-bold text-white opacity-60 hover:opacity-100  transition"
+                        >
+                          Open streak history details →
+                        </Link>
+                        {(freezeUsed || quizData?.freezeUsed) && (
+                          <p
+                            className="text-[10px] font-bold mt-1"
+                            style={{ color: "#06D6A0" }}
+                          >
+                            🧊 Freeze used to protect your streak!
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Secondary CTA Action Button */}
+                    <button
+                      onClick={() =>
+                        alert("Redirecting to more practice challenges...")
+                      }
+                      className="w-full py-3.5 rounded-xl text-sm font-black transition-all hover:opacity-90 active:scale-[0.99]"
+                      style={{ backgroundColor: "#FFE66D", color: "#1A1A2E" }}
+                    >
+                      Try more math problems
+                    </button>
+
+                    <p className="text-center text-[10px] text-gray-300 mt-4 font-medium">
+                      New question tomorrow ✦
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {quizData?.options?.map((option, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleOptionSelect(option)}
+                        disabled={submitting}
+                        className="w-full px-4 py-4 rounded-xl border-2 border-gray-100 text-left font-medium text-base transition-all hover:border-orange-400 hover:bg-orange-50 disabled:opacity-50"
+                        style={{ color: "#1A1A2E" }}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ROW 3: Desktop Utility Alignment Row */}
+        <div className="w-full flex justify-end items-center gap-4 mt-6 pb-2 px-1 text-xs font-semibold text-gray-400 sm:absolute sm:bottom-0 sm:right-4 lg:right-0">
+          <button
+            onClick={handleShare}
+            className="hover:text-gray-600 transition-colors"
           >
-            Maths<span style={{ color: "#FF6B35" }}>Streak</span>
-          </h1>
+            {copied ? "Copied! ✓" : "Share"}
+          </button>
+          <span className="text-gray-200 select-none">|</span>
           <button
             onClick={handleLogout}
-            className="text-xs text-gray-400 hover:text-gray-600 transition-colors font-medium"
+            className="hover:text-gray-600 transition-colors"
           >
             Log out
           </button>
-        </div>
-
-        {/* Date badge */}
-        <div className="mb-4">
-          <span
-            className="text-xs font-bold px-3 py-1 rounded-full"
-            style={{ backgroundColor: "#FFE66D", color: "#1A1A2E" }}
-          >
-            {new Date().toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-            })}
-          </span>
-        </div>
-
-        {/* Main card */}
-        {/* Main card — update padding */}
-        <div
-          className={`bg-white rounded-2xl shadow-lg overflow-hidden ${shake ? "shake" : ""}`}
-        >
-          <div className="h-2 w-full" style={{ backgroundColor: "#FF6B35" }} />
-          <div className="p-6 sm:p-8">
-            {" "}
-            {/* smaller padding on mobile */}
-            {error && (
-              <div
-                className="mb-4 p-3 rounded-lg text-sm font-medium"
-                style={{ backgroundColor: "#FEE2E2", color: "#EF233C" }}
-              >
-                {error}
-              </div>
-            )}
-            {/* Question label */}
-            <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3">
-              Today's Question
-            </p>
-            {/* Question text */}
-            <p
-              className="text-lg font-semibold leading-relaxed mb-8"
-              style={{ color: "#1A1A2E" }}
-            >
-              {quizData?.question}
-            </p>
-            {showResult ? (
-              <div>
-                {/* Result banner */}
-                <div
-                  className="rounded-xl p-4 mb-6 text-center"
-                  style={{
-                    backgroundColor: displayResult.isCorrect
-                      ? "#D1FAE5"
-                      : "#FEE2E2",
-                  }}
-                >
-                  <p
-                    className="text-2xl font-black mb-1"
-                    style={{
-                      color: displayResult.isCorrect ? "#06D6A0" : "#EF233C",
-                    }}
-                  >
-                    {displayResult.isCorrect ? "Correct! 🎉" : "Not quite 😅"}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Answer:{" "}
-                    <span className="font-bold text-gray-700">
-                      {displayResult.correctAnswer}
-                    </span>
-                  </p>
-                </div>
-
-                {/* Streak counter — the signature element */}
-                <div
-                  className="rounded-xl p-5 text-center"
-                  style={{ backgroundColor: "#1A1A2E" }}
-                >
-                  <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-1">
-                    Current Streak
-                  </p>
-                  <p
-                    className="text-4xl sm:text-5xl font-black"
-                    style={{ color: "#FFE66D" }}
-                  >
-                    🔥 {displayResult.streak}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {displayResult.streak === 0
-                      ? "Answer correctly tomorrow to start a streak!"
-                      : displayResult.streak === 1
-                        ? "Great start! Come back tomorrow."
-                        : `${displayResult.streak} days in a row. Keep it up!`}
-                  </p>
-                </div>
-
-                <div className="mt-6 text-center">
-                  <Link
-                    to="/streak"
-                    className="text-sm font-medium text-indigo-600 hover:text-indigo-800 underline transition"
-                  >
-                    View my quiz history history →
-                  </Link>
-                </div>
-                <button
-                  onClick={handleShare}
-                  className="w-full py-3 rounded-xl font-bold transition-all mt-4"
-                  style={{
-                    backgroundColor: copied ? "#06D6A0" : "#FFE66D",
-                    color: "#1A1A2E",
-                  }}
-                >
-                  {copied ? "Copied! ✓" : "Try it yourself 👀"}
-                </button>
-
-                <p className="text-center text-xs text-gray-300 mt-4">
-                  New question tomorrow ✦
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {quizData?.options?.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleOptionSelect(option)}
-                    disabled={submitting}
-                    className="w-full px-4 py-4 rounded-xl border-2 border-gray-100 text-left font-medium text-base transition-all hover:border-orange-400 hover:bg-orange-50 disabled:opacity-50"
-                    style={{ color: "#1A1A2E" }}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

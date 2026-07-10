@@ -24,7 +24,7 @@ function LoginPage() {
     setLoading(true);
     try {
       const data = await loginUser(email, password);
-      login(data.token);
+      login(data.token, data.user.email);
       navigate("/quiz");
     } catch (err: any) {
       setError(err.response?.data?.error ?? "Wrong email or password. Try again.");

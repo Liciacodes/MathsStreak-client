@@ -23,12 +23,15 @@ export interface TodayQuizResponse {
     correctAnswer?: string;
     isCorrect?: boolean;
     streak?: number;
+    freezeUsed?: boolean;
+    freezeAvailable?: number;
 }
 
 export interface SubmitAnswerResponse {
     isCorrect: boolean;
     correctAnswer: string;
     streak: number;
+    freezeUsed: boolean;
 }
 
 export interface StreakHistoryItem {
