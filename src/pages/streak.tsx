@@ -4,7 +4,7 @@ import { useAuth } from "../AuthContext";
 import { getStreakHistory} from "../api";
 
 export const StreakHistory = () => {
-  const { token, logout } = useAuth();
+  const { token} = useAuth();
   const navigate = useNavigate();
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,10 +26,7 @@ export const StreakHistory = () => {
     fetchHistory();
   }, [token]);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+ 
 
   // Build a map of date string → isCorrect for quick lookup
   const historyMap = new Map(
@@ -75,12 +72,7 @@ export const StreakHistory = () => {
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: "#1A1A2E" }}>
             Maths<span style={{ color: "#FF6B35" }}>Streak</span>
           </h1>
-          <button
-            onClick={handleLogout}
-            className="text-xs text-gray-400 hover:text-gray-600 transition-colors font-medium"
-          >
-            Log out
-          </button>
+          
         </div>
 
         {/* Stats row */}

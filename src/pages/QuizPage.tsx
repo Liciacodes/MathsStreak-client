@@ -9,9 +9,7 @@ import {
 
 import confetti from "canvas-confetti";
 
-
 import { useAuth } from "../AuthContext";
-
 
 // 1. Dynamic Initials Helper (Matches Leaderboard)
 const getInitials = (email: string): string => {
@@ -30,23 +28,6 @@ const getInitials = (email: string): string => {
   return localPart.substring(0, 2).toUpperCase();
 };
 
-// 2. Dynamic Display Name Helper (Matches Leaderboard)
-const getDisplayName = (email: string): string => {
-  if (!email) return "User";
-  const localPart = email.split("@")[0];
-
-  if (localPart.toLowerCase().startsWith("feliciausosen")) {
-    return "Felicia U.";
-  }
-
-  const parts = localPart.split(/[\._-]/);
-  if (parts.length >= 2 && parts[0] && parts[1]) {
-    return `${parts[0].charAt(0).toUpperCase() + parts[0].slice(1)} ${parts[1].charAt(0).toUpperCase()}.`;
-  }
-
-  return localPart.charAt(0).toUpperCase() + localPart.slice(1, 8);
-};
-
 function QuizPage() {
   const { token, logout, email } = useAuth();
   const navigate = useNavigate();
@@ -58,9 +39,9 @@ function QuizPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [freezesAvailable, setFreezesAvailable] = useState<number>(0);
   const [freezeUsed, setFreezeUsed] = useState<boolean>(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const [result, setResult] = useState<{
     isCorrect: boolean;
@@ -147,26 +128,6 @@ function QuizPage() {
     streak: quizData?.streak ?? 0,
   };
 
-  const handleShare = async () => {
-    const text = displayResult.isCorrect
-      ? `I'm on a ${displayResult.streak} day streak on MathsStreak! 🔥 Think you can keep up? Try today's question:\nhttps://maths-streak-client.vercel.app`
-      : `MathsStreak got me today 😅 Think you can answer today's maths question? Try it:\nhttps://maths-streak-client.vercel.app`;
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
   if (loading) {
     return (
       <div
@@ -187,9 +148,9 @@ function QuizPage() {
       style={{ backgroundColor: "#F7F7FF" }}
     >
       {/* Container max-w-md holds layout aligned cleanly with the main card width size */}
-      <div className="w-full max-w-md px-4 flex flex-col relative min-h-[85vh] lg:min-h-175">
-        {/* ROW 1: Responsive Header Block */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div className="w-full max-w-md px-4 flex flex-col relative min-h-[85vh] lg:min-h-175  ">
+        {/* ROW 1: Responsive Header Block with relative helper added */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 relative">
           {/* Logo */}
           <div>
             <h1
@@ -213,49 +174,101 @@ function QuizPage() {
             </div>
           </div>
 
-          {/* Profile Widget Box */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center gap-3 w-full sm:w-auto max-w-xs">
-            <div className="relative">
-              {/* Dynamic Initials Avatar */}
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-black select-none shadow-sm"
-                style={{ backgroundColor: "#1A1A2E", color: "#FFFFFF" }}
-              >
-                {getInitials(email ?? "")}
+          {/* Profile Widget Box (relative removed so child matches header width instead) */}
+          <div className="">
+            <button
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center gap-3"
+            >
+              <div className="relative">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-black select-none shadow-sm"
+                  style={{ backgroundColor: "#1A1A2E", color: "#FFFFFF" }}
+                >
+                  {getInitials(email ?? "")}
+                </div>
+                <div
+                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-black shadow-sm"
+                  style={{ backgroundColor: "#FF6B35", color: "#FFFFFF" }}
+                >
+                  {userRank === 1 ? "👑" : (userRank ?? "?")}
+                </div>
               </div>
-              {/* Badge Overlapping Avatar */}
-              <div
-                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-black shadow-sm"
-                style={{ backgroundColor: "#FF6B35", color: "#FFFFFF" }}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4 text-gray-400 transition-transform duration-200"
+                style={{
+                  transform: isProfileOpen ? "rotate(-180deg)" : "rotate(0deg)",
+                }}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
               >
-                {userRank === 1 ? "👑" : (userRank ?? "?")}
-              </div>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  stroke="M19 9l-7 7-7-7"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
 
-            {/* Dynamic Profile Info */}
-            <div className="flex flex-col">
-              {/* FIXED: Now correctly rendering getDisplayName logic instead of raw initials */}
-              <span
-                className="text-sm font-bold truncate max-w-35"
-                style={{ color: "#1A1A2E" }}
-              >
-                {getDisplayName(email ?? "")}
-              </span>
-              <button
-                onClick={() => navigate("/leaderboard")}
-                className="text-[10px] font-extrabold mt-0.5 tracking-wider uppercase text-left transition hover:opacity-80"
-                style={{ color: "#FF6B35" }}
-              >
-                view LEADERBOARD
-              </button>
-              <span
-                className="text-[10px] font-bold mt-0.5"
-                style={{ color: "#06D6A0" }}
-              >
-                🧊 {freezesAvailable} freeze{freezesAvailable !== 1 ? "s" : ""}{" "}
-                left
-              </span>
-            </div>
+            {/* Overlay panel — floats over content spanning full width */}
+            {isProfileOpen && (
+              <>
+                {/* Backdrop — click outside to close */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setIsProfileOpen(false)}
+                />
+
+                {/* Panel positioned absolutely relative to Row 1 header block */}
+                <div className="absolute left-0 right-0 top-full mt-2 z-20 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 w-full flex flex-col gap-3">
+                  {/* Name + freeze */}
+                  <div>
+                    <p
+                      className="text-sm font-bold"
+                      style={{ color: "#1A1A2E" }}
+                    >
+                      {email}
+                    </p>
+                    <p
+                      className="text-[10px] font-bold mt-1"
+                      style={{ color: "#06D6A0" }}
+                    >
+                      🧊 {freezesAvailable} freeze
+                      {freezesAvailable !== 1 ? "s" : ""} left
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gray-100" />
+
+                  {/* View Leaderboard */}
+                  <button
+                    onClick={() => {
+                      navigate("/leaderboard");
+                      setIsProfileOpen(false);
+                    }}
+                    className="text-[10px] font-extrabold tracking-wider uppercase text-left transition hover:opacity-80"
+                    style={{ color: "#FF6B35" }}
+                  >
+                    View Leaderboard →
+                  </button>
+
+                  {/* Share */}
+                  <div className="border-t border-gray-100" />
+
+                  {/* Logout */}
+                  <button
+                    onClick={handleLogout}
+                    className="text-xs font-semibold text-left text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    Log out
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -385,23 +398,6 @@ function QuizPage() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* ROW 3: Desktop Utility Alignment Row */}
-        <div className="w-full flex justify-end items-center gap-4 mt-6 pb-2 px-1 text-xs font-semibold text-gray-400 sm:absolute sm:bottom-0 sm:right-4 lg:right-0">
-          <button
-            onClick={handleShare}
-            className="hover:text-gray-600 transition-colors"
-          >
-            {copied ? "Copied! ✓" : "Share"}
-          </button>
-          <span className="text-gray-200 select-none">|</span>
-          <button
-            onClick={handleLogout}
-            className="hover:text-gray-600 transition-colors"
-          >
-            Log out
-          </button>
         </div>
       </div>
     </div>

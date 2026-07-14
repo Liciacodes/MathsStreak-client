@@ -171,7 +171,7 @@ export const Leaderboard = () => {
 
                         {/* Clean Masked Email Output */}
                         <span
-                          className="text-sm font-medium truncate max-w-[180px]"
+                          className="text-sm font-medium truncate max-w-45"
                           style={{ color: "#1A1A2E" }}
                         >
                           {maskEmail(user.email)}
