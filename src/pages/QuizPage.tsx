@@ -366,7 +366,7 @@ function QuizPage() {
                     </div>
 
                     {/* Secondary CTA Action Button */}
-                    <button
+                    {/* <button
                       onClick={() =>
                         alert("Redirecting to more practice challenges...")
                       }
@@ -374,7 +374,7 @@ function QuizPage() {
                       style={{ backgroundColor: "#FFE66D", color: "#1A1A2E" }}
                     >
                       Try more math problems
-                    </button>
+                    </button> */}
 
                     <p className="text-center text-[10px] text-gray-300 mt-4 font-medium">
                       New question tomorrow ✦
